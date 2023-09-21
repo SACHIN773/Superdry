@@ -1,3 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+.container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .red-line {
+    width: 3px;
+    height: 100px; /* Adjust the height as needed */
+    background-color: red;
+    margin-right: 20px; /* Adjust the spacing as needed */
+  }
+  

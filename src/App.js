@@ -1,10 +1,12 @@
 import React from 'react';
+import './App.css'
 
 function App() {
   return (
-    <div>
-      <p>Trial</p>
-      
+    <div className='container'>
+     <p>Sachin</p>
+   
+    
     </div>
   );
 }
