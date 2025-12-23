@@ -1,50 +1,64 @@
 import axios from "axios";
 
-const RemoveCredentials = () => {
+/**
+ * Clear auth data & redirect to login
+ */
+const clearAuthAndRedirect = () => {
   localStorage.clear();
   window.location.href = "/login";
 };
 
-const baseURL =
-process.env.REACT_APP_ENV == "prod"
-    ? "https://portal.cappitallwant.com/backend"
-    : process.env.REACT_APP_ENV == "demo"
-    ? "https://demo.cappitallwant.com/backend"
-    : process.env.REACT_APP_ENV == "dev"
+/**
+ * Environment based base URL
+ */
+const BASE_URL =
+  process.env.REACT_APP_ENV === "prod"
+    ? "https://portal.yourdomain.com/backend"
+    : process.env.REACT_APP_ENV === "demo"
+    ? "https://demo.yourdomain.com/backend"
+    : process.env.REACT_APP_ENV === "dev"
     ? "http://20.204.210.226:5002"
     : "http://localhost:5002";
 
-const instance = axios.create({
-  baseURL: baseURL,
+/**
+ * Axios instance
+ */
+const httpClient = axios.create({
+  baseURL: BASE_URL,
 });
 
-instance.interceptors.request.use(function (config) {
-  const token = localStorage.getItem("token");
-  config.headers.Authorization = token ? `Bearer ${token}` : "";
-  return config;
-});
-
-instance.interceptors.response.use(
-  undefined,
-  function axiosRetryInterceptor(err) {
-    console.log(err.response);
-    if (err.response && err.response.status && err.response.status === 401) {
-      RemoveCredentials();
-    } else if (
-      err.response &&
-      err.response.status &&
-      err.response.status === 502
-    ) {
-      alert("Something went wrong!");
-    } else if (
-      err.response &&
-      err.response.status &&
-      err.response.status === 500
-    ) {
-      alert("Unable to complete your request, Please retry!");
+/**
+ * Request interceptor
+ */
+httpClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return Promise.reject(err);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/**
+ * Response interceptor
+ */
+httpClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      clearAuthAndRedirect();
+    } else if (status === 502) {
+      alert("Server error. Please try again later.");
+    } else if (status === 500) {
+      alert("Unable to process your request.");
+    }
+
+    return Promise.reject(error);
   }
 );
 
-export default instance;
+export default httpClient;
